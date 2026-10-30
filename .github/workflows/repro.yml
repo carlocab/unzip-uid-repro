@@ -1,0 +1,37 @@
+name: Repro
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repro:
+    strategy:
+      fail-fast: false
+      matrix:
+        # GitHub's macos-15 runners are on a mix of 15.7.9 and 15.8.2 images,
+        # so run several copies to land on 15.8.2.
+        include:
+          - { runner: macos-15, copy: 1 }
+          - { runner: macos-15, copy: 2 }
+          - { runner: macos-15, copy: 3 }
+          - { runner: macos-15, copy: 4 }
+          - { runner: macos-15, copy: 5 }
+          - { runner: macos-15, copy: 6 }
+          - { runner: macos-15-intel, copy: 1 }
+          - { runner: macos-26, copy: 1 }
+    name: ${{ matrix.runner }} (${{ matrix.copy }})
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Image
+        run: echo "ImageVersion=${ImageVersion-}"
+
+      - name: Repro
+        run: ./repro.sh
